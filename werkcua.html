@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Course Planner</title>
+    <style>
+        /* --- Basic Styling --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        /* --- Navigation Tabs --- */
+        nav {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        nav a {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-bottom: -1px;
+            text-decoration: none;
+            color: #3498db;
+        }
+        nav a.active {
+            border-color: #ddd;
+            border-bottom: 1px solid #fff;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* --- View Sections --- */
+        .view {
+            display: none;
+        }
+        .view.active {
+            display: block;
+        }
+
+        /* --- Form & Controls --- */
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #555;
+        }
+        select, button, input[type="file"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            align-self: flex-end;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        /* --- Results & Checklists --- */
+        #unitChecklist {
+            margin-bottom: 20px;
+        }
+        .unit-item {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .unit-item input {
+            margin-right: 10px;
+        }
+        #planResult {
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        .suggestion {
+            padding: 12px;
+            border-left: 4px solid;
+            margin-bottom: 10px;
+            border-radius: 0 4px 4px 0;
+        }
+        .suggestion-ready {
+            border-color: #2ecc71; /* Green */
+            background-color: #e8f8f0;
+        }
+        .suggestion-blocked {
+            border-color: #e74c3c; /* Red */
+            background-color: #fdedec;
+        }
+        .suggestion code {
+            background-color: #ddd;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        #file-feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e8f8f0;
+            color: #1a6438;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Course Planner & Knowledge Base</h1>
+        
+        <nav>
+            <a href="#" class="tab-link active" data-view="plannerView">Course Planner</a>
+            <a href="#" class="tab-link" data-view="uploadView">Upload Unit Data</a>
+        </nav>
+
+        <div id="plannerView" class="view active">
+            <h2>1. Select Your Course and Year</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="courseCode">Course Code</label>
+                    <select id="courseCode">
+                        </select>
+                </div>
+                <div class="control-group">
+                    <label for="courseYear">Current Year of Study</label>
+                    <select id="courseYear">
+                        <option value="1">Year 1</option>
+                        <option value="2">Year 2</option>
+                        <option value="3">Year 3</option>
+                        <option value="4">Year 4</option>
+                    </select>
+                </div>
+            </div>
+            
+            <h2>2. Mark Completed Units for This Year</h2>
+            <div id="unitChecklist">
+                <p>Please select a course and year to see the list of units.</p>
+            </div>
+            <button id="generatePlanBtn">Generate Enrollment Advice</button>
+            
+            <div id="planResult"></div>
+        </div>
+
+        <div id="uploadView" class="view">
+            <h2>Upload Unit Offering Data</h2>
+            <p>Upload a <code>.csv</code> or <code>.txt</code> file to update unit availability. <br>
+               The format should be: <code>UnitCode,Offering,Status</code> (e.g., <code>SIT102,T1;T3,Available</code>).</p>
+            <div class="control-group">
+                <label for="fileUpload">Select File</label>
+                <input type="file" id="fileUpload" accept=".csv,.txt">
+            </div>
+            <div id="file-feedback"></div>
+        </div>
+    </div>
+
+    <script>
+    // --- DATABASE ---
+    // A mock knowledge base. In a real application, this would come from a server/API.
+    const knowledgeBase = {
+        "S321": {
+            name: "Bachelor of Software Engineering",
+            units: {
+                "SIT101": { name: "Fundamentals of IT", year: 1, prerequisites: [], offering: ["T1"], isFull: false },
+                "SIT123": { name: "Data Capture Technologies", year: 1, prerequisites: [], offering: ["T1", "T2"], isFull: false },
+                "SIT102": { name: "Introduction to Programming", year: 1, prerequisites: ["SIT101"], offering: ["T2"], isFull: false },
+                "SIT103": { name: "Database Fundamentals", year: 1, prerequisites: ["SIT101"], offering: ["T2", "T3"], isFull: true },
+                
+                "SIT202": { name: "Networks and Security", year: 2, prerequisites: ["SIT101"], offering: ["T1"], isFull: false },
+                "SIT232": { name: "Object-Oriented Development", year: 2, prerequisites: ["SIT102"], offering: ["T1", "T2"], isFull: false },
+                "SIT221": { name: "Data Structures and Algorithms", year: 2, prerequisites: ["SIT102"], offering: ["T2"], isFull: false },
+
+                "SIT321": { name: "Software Engineering", year: 3, prerequisites: ["SIT232", "SIT221"], offering: ["T1"], isFull: false },
+                "SIT374": { name: "Project Management", year: 3, prerequisites: ["SIT202"], offering: ["T1"], isFull: false },
+                "SIT305": { name: "Cloud Computing", year: 3, prerequisites: ["SIT202", "SIT221"], offering: ["T2"], isFull: false },
+            }
+        },
+        "D365": {
+            name: "Bachelor of Design (Architecture)",
+            units: {
+                "SRD101": { name: "Design Studio 1", year: 1, prerequisites: [], offering: ["T1"], isFull: false },
+                "SRA102": { name: "Architectural History", year: 1, prerequisites: [], offering: ["T2"], isFull: false },
+
+                "SRD201": { name: "Design Studio 2", year: 2, prerequisites: ["SRD101"], offering: ["T1"], isFull: false },
+                "SRT211": { name: "Building Technology", year: 2, prerequisites: ["SRD101"], offering: ["T2"], isFull: true },
+            }
+        }
+    };
+
+    // --- DOM ELEMENT REFERENCES ---
+    const courseSelect = document.getElementById('courseCode');
+    const yearSelect = document.getElementById('courseYear');
+    const unitChecklist = document.getElementById('unitChecklist');
+    const generatePlanBtn = document.getElementById('generatePlanBtn');
+    const planResult = document.getElementById('planResult');
+    const fileUpload = document.getElementById('fileUpload');
+    const fileFeedback = document.getElementById('file-feedback');
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const views = document.querySelectorAll('.view');
+
+    // --- EVENT LISTENERS ---
+    document.addEventListener('DOMContentLoaded', initialize);
+    courseSelect.addEventListener('change', displayUnitsForSelection);
+    yearSelect.addEventListener('change', displayUnitsForSelection);
+    generatePlanBtn.addEventListener('click', generatePlan);
+    fileUpload.addEventListener('change', handleFileUpload);
+    tabLinks.forEach(tab => tab.addEventListener('click', switchView));
+
+    // --- INITIALIZATION ---
+    function initialize() {
+        populateCourseSelector();
+        displayUnitsForSelection();
+    }
+    
+    // --- TAB SWITCHING LOGIC ---
+    function switchView(event) {
+        event.preventDefault();
+        const targetView = event.target.dataset.view;
+
+        // Update tab active state
+        tabLinks.forEach(link => link.classList.remove('active'));
+        event.target.classList.add('active');
+
+        // Update view active state
+        views.forEach(view => {
+            view.classList.remove('active');
+            if (view.id === targetView) {
+                view.classList.add('active');
+            }
+        });
+    }
+
+    // --- CORE PLANNER FUNCTIONS ---
+    function populateCourseSelector() {
+        for (const courseCode in knowledgeBase) {
+            const option = document.createElement('option');
+            option.value = courseCode;
+            option.textContent = `${courseCode} - ${knowledgeBase[courseCode].name}`;
+            courseSelect.appendChild(option);
+        }
+    }
+
+    function displayUnitsForSelection() {
+        const selectedCourse = courseSelect.value;
+        const selectedYear = parseInt(yearSelect.value, 10);
+        const courseUnits = knowledgeBase[selectedCourse].units;
+        
+        const unitsForYear = Object.keys(courseUnits).filter(unitCode => courseUnits[unitCode].year === selectedYear);
+
+        unitChecklist.innerHTML = ''; // Clear previous list
+        planResult.innerHTML = ''; // Clear previous results
+
+        if (unitsForYear.length === 0) {
+            unitChecklist.innerHTML = '<p>No units found for this year.</p>';
+            return;
+        }
+
+        unitsForYear.forEach(unitCode => {
+            const unit = courseUnits[unitCode];
+            const div = document.createElement('div');
+            div.className = 'unit-item';
+            div.innerHTML = `
+                <input type="checkbox" id="${unitCode}" name="${unitCode}">
+                <label for="${unitCode}"><strong>${unitCode}</strong> - ${unit.name}</label>
+            `;
+            unitChecklist.appendChild(div);
+        });
+    }
+
+    function generatePlan() {
+        const selectedCourse = courseSelect.value;
+        const selectedYear = parseInt(yearSelect.value, 10);
+        const allCourseUnits = knowledgeBase[selectedCourse].units;
+
+        // 1. Determine all completed units
+        const completedUnits = new Set();
+        // Assume all units from previous years are completed
+        Object.keys(allCourseUnits).forEach(unitCode => {
+            if (allCourseUnits[unitCode].year < selectedYear) {
+                completedUnits.add(unitCode);
+            }
+        });
+        // Add currently checked units from this year
+        const checkboxes = unitChecklist.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(cb => {
+            if (cb.checked) {
+                completedUnits.add(cb.id);
+            }
+        });
+        
+        // 2. Identify uncompleted units for the current year
+        const uncompletedUnits = [];
+        checkboxes.forEach(cb => {
+            if (!cb.checked) {
+                uncompletedUnits.push(cb.id);
+            }
+        });
+
+        planResult.innerHTML = '<h2>Enrollment Advice</h2>'; // Clear previous results
+        
+        if (uncompletedUnits.length === 0) {
+            planResult.innerHTML += '<p>All units for this year are marked as complete!</p>';
+            return;
+        }
+
+        // 3. Generate advice for each uncompleted unit
+        uncompletedUnits.forEach(unitCode => {
+            const unit = allCourseUnits[unitCode];
+            const prerequisites = unit.prerequisites;
+            const missingPrereqs = prerequisites.filter(prereq => !completedUnits.has(prereq));
+
+            let suggestionHTML = '';
+            if (missingPrereqs.length === 0) {
+                // Ready to enroll
+                const availability = unit.isFull ? '<span style="color: #e74c3c;">(Full)</span>' : '';
+                suggestionHTML = `
+                    <div class="suggestion suggestion-ready">
+                        <strong>${unitCode} - ${unit.name}</strong> is ready to be enrolled in.<br>
+                        Offered in: <strong>${unit.offering.join(', ')}</strong> ${availability}
+                    </div>`;
+            } else {
+                // Blocked by prerequisites
+                suggestionHTML = `
+                    <div class="suggestion suggestion-blocked">
+                        <strong>${unitCode} - ${unit.name}</strong> cannot be enrolled in yet.<br>
+                        Missing prerequisites: ${missingPrereqs.map(p => `<code>${p}</code>`).join(', ')}
+                    </div>`;
+            }
+            planResult.innerHTML += suggestionHTML;
+        });
+    }
+
+    // --- FILE UPLOAD FUNCTIONS ---
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            parseAndApplyData(text);
+        };
+        reader.readAsText(file);
+    }
+
+    function parseAndApplyData(data) {
+        const lines = data.trim().split('\n');
+        let updates = 0;
+        let errors = 0;
+        let feedbackLog = `File processing complete.\n-----------------------\n`;
+
+        lines.forEach((line, index) => {
+            const [unitCode, offeringStr, status] = line.split(',').map(s => s.trim());
+            
+            if (!unitCode || !offeringStr || !status) {
+                errors++;
+                feedbackLog += `Error on line ${index + 1}: Malformed data. Skipping.\n`;
+                return;
+            }
+
+            let unitFound = false;
+            for (const course in knowledgeBase) {
+                if (knowledgeBase[course].units[unitCode]) {
+                    const unit = knowledgeBase[course].units[unitCode];
+                    unit.offering = offeringStr.split(';').map(s => s.trim());
+                    unit.isFull = status.toLowerCase() === 'full';
+                    updates++;
+                    feedbackLog += `Updated ${unitCode}: Offering=[${unit.offering.join(', ')}], Status=${unit.isFull ? 'Full' : 'Available'}\n`;
+                    unitFound = true;
+                    break; 
+                }
+            }
+            if (!unitFound) {
+                errors++;
+                feedbackLog += `Warning on line ${index + 1}: Unit code "${unitCode}" not found in knowledge base.\n`;
+            }
+        });
+        
+        feedbackLog += `-----------------------\nSummary: ${updates} units updated, ${errors} errors found.`;
+        fileFeedback.textContent = feedbackLog;
+
+        // Refresh the displayed units if the current selection is affected
+        displayUnitsForSelection();
+    }
+
+    </script>
+</body>
+</html>
