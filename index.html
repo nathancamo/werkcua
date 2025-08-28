@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nathan — CUA Assistant</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container" id="app" role="main">
+    <header class="header">
+      <h1>Hi, I'm Nathan 👋</h1>
+      <p class="tagline">CUA • Product-minded technologist building accessible, privacy-forward tools.</p>
+    </header>
+
+    <section class="card" aria-labelledby="demo-title">
+      <h2 id="demo-title">CUA Assistant</h2>
+      <p>Enter a phrase and click <strong>Transform</strong>. The app runs fully in the browser and includes a simple assistant-style transform you can extend.</p>
+
+      <form id="demo-form" class="demo-form" novalidate>
+        <label for="phrase">Input</label>
+        <input id="phrase" name="phrase" type="text" placeholder="Describe your user problem or paste text..." required />
+        <div class="controls">
+          <button type="submit" id="transform-btn">Transform</button>
+          <button type="button" id="clear-btn">Clear</button>
+        </div>
+      </form>
+
+      <div id="result" class="result" aria-live="polite"></div>
+    </section>
+
+    <section class="card" aria-labelledby="about-title">
+      <h2 id="about-title">About this app</h2>
+      <p>This app is a small single-page web app (no build step) that demonstrates an assistant-style transformation and a privacy-first approach (no network requests by default). Replace or extend <code>transformText</code> in <code>script.js</code> to hook up your own assistant logic or backend.</p>
+      <ul>
+        <li>Accessible semantic markup</li>
+        <li>Client-side only (static)</li>
+        <li>Extensible: synchronous or async transform function</li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <p>Open-source • <a href="https://github.com/nathancamo/werkcua" target="_blank" rel="noopener noreferrer">werkcua</a></p>
+    </footer>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
