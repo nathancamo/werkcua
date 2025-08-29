@@ -14,7 +14,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-inline-size: 900px;
             margin: auto;
             background: #fff;
             padding: 25px;
@@ -23,28 +23,28 @@
         }
         h1, h2 {
             color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
+            border-block-end: 2px solid #3498db;
+            padding-block-end: 10px;
         }
 
         /* --- Navigation Tabs --- */
         nav {
             display: flex;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
+            border-block-end: 1px solid #ddd;
+            margin-block-end: 20px;
         }
         nav a {
             padding: 10px 20px;
             cursor: pointer;
             border: 1px solid transparent;
-            border-bottom: none;
-            margin-bottom: -1px;
+            border-block-end: none;
+            margin-block-end: -1px;
             text-decoration: none;
             color: #3498db;
         }
         nav a.active {
             border-color: #ddd;
-            border-bottom: 1px solid #fff;
+            border-block-end: 1px solid #fff;
             border-radius: 5px 5px 0 0;
             font-weight: bold;
             color: #2c3e50;
@@ -62,7 +62,7 @@
         .controls {
             display: flex;
             gap: 20px;
-            margin-bottom: 25px;
+            margin-block-end: 25px;
             align-items: center;
         }
         .control-group {
@@ -70,7 +70,7 @@
             flex-direction: column;
         }
         label {
-            margin-bottom: 5px;
+            margin-block-end: 5px;
             font-weight: bold;
             font-size: 0.9em;
             color: #555;
@@ -95,27 +95,27 @@
 
         /* --- Results & Checklists --- */
         #unitChecklist {
-            margin-bottom: 20px;
+            margin-block-end: 20px;
         }
         .unit-item {
             background: #ecf0f1;
             padding: 10px;
             border-radius: 4px;
-            margin-bottom: 8px;
+            margin-block-end: 8px;
             display: flex;
             align-items: center;
         }
         .unit-item input {
-            margin-right: 10px;
+            margin-inline-end: 10px;
         }
         #planResult {
-            border-top: 1px solid #ddd;
-            padding-top: 15px;
+            border-block-start: 1px solid #ddd;
+            padding-block-start: 15px;
         }
         .suggestion {
             padding: 12px;
-            border-left: 4px solid;
-            margin-bottom: 10px;
+            border-inline-start: 4px solid;
+            margin-block-end: 10px;
             border-radius: 0 4px 4px 0;
         }
         .suggestion-ready {
@@ -132,7 +132,7 @@
             border-radius: 3px;
         }
         #file-feedback {
-            margin-top: 15px;
+            margin-block-start: 15px;
             padding: 10px;
             border-radius: 5px;
             background-color: #e8f8f0;
