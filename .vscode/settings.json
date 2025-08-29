@@ -1,0 +1,10 @@
+{
+    "github.copilot.enable": {
+        "markdown": true,
+        "scminput": true,
+        "plaintext": true
+    },
+    "github.copilot.chat.codesearch.enabled": true,
+    "github.copilot.chat.generateTests.codeLens": true,
+    "javascript.referencesCodeLens.enabled": true
+}
